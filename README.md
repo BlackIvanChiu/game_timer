@@ -47,6 +47,13 @@ pyinstaller --windowed --name GameTimer main.py
 
 PyInstaller 不能跨平台打包，所以要產生 Windows 版，就必須在 Windows 上執行上面的指令。
 
+### 用 GitHub Actions 自動打包 Windows 版
+
+如果手邊沒有 Windows 電腦，可以交給 GitHub 處理（設定在 `.github/workflows/build-windows.yml`）：
+
+- 每次推送到 `main`，GitHub 都會自動打包。打包好的 `GameTimer.exe` 可以到 repo 的 **Actions** 頁面，點進最新一次執行，在下方的 **Artifacts** 下載（需要登入 GitHub）。
+- 推送一個 `v` 開頭的 tag（例如 `git tag v1.0.0 && git push origin v1.0.0`），`GameTimer.exe` 就會自動發佈到 repo 的 **Releases** 頁面，誰都可以下載。
+
 在 macOS 上，如果出現 `You have not agreed to the Xcode license agreements` 的錯誤，請先在終端機執行 `sudo xcodebuild -license` 並同意授權條款，然後再重新打包。
 
 ## 設定檔存放位置

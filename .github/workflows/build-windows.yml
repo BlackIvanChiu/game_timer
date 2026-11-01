@@ -1,0 +1,42 @@
+name: Build Windows executable
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pyinstaller
+
+      - name: Check that the app imports
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -c "import main"
+
+      - name: Build GameTimer.exe
+        run: pyinstaller --onefile --windowed --name GameTimer main.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GameTimer-windows
+          path: dist/GameTimer.exe
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/GameTimer.exe
