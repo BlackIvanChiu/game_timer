@@ -194,6 +194,7 @@ class ChangePasswordPage(QWidget):
 class StartPage(QWidget):
     start_requested = Signal(int)
     change_password_requested = Signal()
+    home_requested = Signal()
 
     def __init__(self, config: Config):
         super().__init__()
@@ -229,13 +230,12 @@ class StartPage(QWidget):
         start_row.addWidget(self.password, 3)
         start_row.addWidget(start_button, 2)
 
+        home_button = _button("回主頁", "link")
         change_button = _button("更改密碼", "link")
-        quit_button = _button("離開程式", "link")
         footer = QHBoxLayout()
+        footer.addWidget(home_button)
         footer.addStretch()
         footer.addWidget(change_button)
-        footer.addWidget(quit_button)
-        self.quit_button = quit_button
 
         layout = QVBoxLayout(self)
         layout.setSpacing(16)
@@ -252,6 +252,7 @@ class StartPage(QWidget):
         start_button.clicked.connect(self._start)
         self.password.returnPressed.connect(self._start)
         change_button.clicked.connect(self.change_password_requested.emit)
+        home_button.clicked.connect(self.home_requested.emit)
 
         self._set_minutes(self.minutes)
 
@@ -280,14 +281,14 @@ class StartPage(QWidget):
 
 class SetupWindow(QWidget):
     start_requested = Signal(int)
-    quit_requested = Signal()
+    home_requested = Signal()
 
     def __init__(self, config: Config):
         super().__init__()
         self.config = config
         self.setObjectName("root")
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        self.setWindowTitle(APP_DISPLAY_NAME)
+        self.setWindowTitle(f"{APP_DISPLAY_NAME} · 遊戲計時")
         self.setStyleSheet(STYLE_SHEET)
         self.resize(640, 520)
 
@@ -307,7 +308,7 @@ class SetupWindow(QWidget):
         self.change_page.done.connect(self._show_start)
         self.start_page.change_password_requested.connect(self._show_change)
         self.start_page.start_requested.connect(self.start_requested.emit)
-        self.start_page.quit_button.clicked.connect(self.quit_requested.emit)
+        self.start_page.home_requested.connect(self.home_requested.emit)
 
     def reset(self) -> None:
         if self.config.has_password():
@@ -326,4 +327,4 @@ class SetupWindow(QWidget):
 
     def closeEvent(self, event: QCloseEvent) -> None:
         event.accept()
-        self.quit_requested.emit()
+        self.home_requested.emit()

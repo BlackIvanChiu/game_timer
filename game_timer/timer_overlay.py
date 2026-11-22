@@ -11,6 +11,9 @@ from game_timer.sound import ChimePlayer
 GREEN = QColor("#2ECC71")
 YELLOW = QColor("#F1C40F")
 RED = QColor("#E74C3C")
+TEAL = QColor("#1ABC9C")
+SKY = QColor("#5DADE2")
+REST_END = QColor("#48C9B0")
 
 DIAL_SIZE = 160
 MARGIN = 10
@@ -30,8 +33,10 @@ def _lerp_color(a: QColor, b: QColor, t: float) -> QColor:
     )
 
 
-def color_for_fraction(fraction: float) -> QColor:
-    """Green when full, yellow at half, red when nearly empty."""
+def color_for_fraction(fraction: float, mode: str = "work") -> QColor:
+    """Work: green→yellow→red. Rest: teal→sky throughout."""
+    if mode == "rest":
+        return _lerp_color(SKY, TEAL, fraction)
     if fraction >= 0.5:
         return _lerp_color(YELLOW, GREEN, (fraction - 0.5) / 0.5)
     return _lerp_color(RED, YELLOW, fraction / 0.5)
@@ -47,7 +52,13 @@ def format_remaining(seconds: float) -> tuple[str, str]:
 class TimerOverlay(QWidget):
     finished = Signal()
 
-    def __init__(self, total_seconds: float, warnings: list[tuple[float, bool]], chime: ChimePlayer):
+    def __init__(
+        self,
+        total_seconds: float,
+        warnings: list[tuple[float, bool]],
+        chime: ChimePlayer,
+        mode: str = "work",
+    ):
         """`warnings` is a list of (remaining_seconds, strong) thresholds that trigger a reminder."""
         super().__init__(
             None,
@@ -61,11 +72,12 @@ class TimerOverlay(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating, True)
         self.setFixedSize(DIAL_SIZE + 2 * MARGIN, DIAL_SIZE + 2 * MARGIN + BUBBLE_HEIGHT)
 
+        self.mode = mode if mode in ("work", "rest") else "work"
         self.total_seconds = max(1.0, float(total_seconds))
         self.remaining = self.total_seconds
         self.pending_warnings = sorted(warnings, key=lambda w: w[0], reverse=True)
         self.chime = chime
-        self.message = ""
+        self.message = "休息中" if self.mode == "rest" else ""
         self._end_time = 0.0
         self._tick_count = 0
 
@@ -102,7 +114,10 @@ class TimerOverlay(QWidget):
 
     def _warn(self, strong: bool) -> None:
         self.chime.play(strong=strong)
-        if strong:
+        if self.mode == "rest":
+            self.message = "休息快結束囉！" if strong else "還有 1 分鐘"
+            shake(self, amplitude=8 if strong else 6, duration_ms=800 if strong else 600, cycles=5)
+        elif strong:
             self.message = "快收尾囉！"
             shake(self, amplitude=14, duration_ms=1500, cycles=10)
         else:
@@ -111,7 +126,7 @@ class TimerOverlay(QWidget):
         self._message_timer.start(MESSAGE_MS)
 
     def _clear_message(self) -> None:
-        self.message = ""
+        self.message = "休息中" if self.mode == "rest" else ""
         self.update()
 
     def paintEvent(self, event: QPaintEvent) -> None:
@@ -119,7 +134,7 @@ class TimerOverlay(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         fraction = self.remaining / self.total_seconds
-        color = color_for_fraction(fraction)
+        color = color_for_fraction(fraction, self.mode)
         dial = QRectF(MARGIN, MARGIN, DIAL_SIZE, DIAL_SIZE)
 
         painter.setPen(QPen(QColor(0, 0, 0, 60), 3))
@@ -176,7 +191,7 @@ class TimerOverlay(QWidget):
         if self.message:
             bubble = QRectF(MARGIN, MARGIN + DIAL_SIZE + 6, DIAL_SIZE, BUBBLE_HEIGHT - 8)
             painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(QColor("#E67E22"))
+            painter.setBrush(REST_END if self.mode == "rest" else QColor("#E67E22"))
             painter.drawRoundedRect(bubble, 14, 14)
             painter.setPen(QColor("white"))
             font.setPixelSize(17)

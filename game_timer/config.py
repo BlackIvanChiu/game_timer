@@ -9,8 +9,10 @@ from PySide6.QtCore import QStandardPaths
 
 PBKDF2_ITERATIONS = 200_000
 DEFAULT_MINUTES = 30
+DEFAULT_WORK_MINUTES = 15
 MIN_MINUTES = 5
 MAX_MINUTES = 180
+REST_MINUTES = 5
 
 
 def default_config_dir() -> Path:
@@ -69,4 +71,14 @@ class Config:
     @last_minutes.setter
     def last_minutes(self, minutes: int) -> None:
         self._data["last_minutes"] = int(minutes)
+        self.save()
+
+    @property
+    def last_work_minutes(self) -> int:
+        minutes = self._data.get("last_work_minutes", DEFAULT_WORK_MINUTES)
+        return max(MIN_MINUTES, min(MAX_MINUTES, int(minutes)))
+
+    @last_work_minutes.setter
+    def last_work_minutes(self, minutes: int) -> None:
+        self._data["last_work_minutes"] = int(minutes)
         self.save()

@@ -3,7 +3,7 @@ import struct
 import wave
 from pathlib import Path
 
-from PySide6.QtCore import QStandardPaths, QUrl
+from PySide6.QtCore import QObject, QStandardPaths, QTimer, QUrl
 from PySide6.QtWidgets import QApplication
 
 try:
@@ -13,6 +13,7 @@ except ImportError:
 
 SAMPLE_RATE = 44100
 CHIME_FILENAME = "chime_v1.wav"
+REPEAT_INTERVAL_MS = 18_000
 
 
 def _tone(frequency: float, duration: float, volume: float) -> list[float]:
@@ -38,9 +39,13 @@ def generate_chime(path: Path) -> None:
         wav.writeframes(b"".join(struct.pack("<h", int(max(-1.0, min(1.0, s)) * 32767)) for s in samples))
 
 
-class ChimePlayer:
-    def __init__(self):
+class ChimePlayer(QObject):
+    def __init__(self, parent: QObject | None = None):
+        super().__init__(parent)
         self._effect = None
+        self._repeat_timer = QTimer(self)
+        self._repeat_timer.setInterval(REPEAT_INTERVAL_MS)
+        self._repeat_timer.timeout.connect(lambda: self.play(strong=True))
         if QSoundEffect is None:
             return
         cache_dir = Path(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation))
@@ -61,3 +66,12 @@ class ChimePlayer:
         self._effect.setVolume(1.0 if strong else 0.5)
         self._effect.setLoopCount(2 if strong else 1)
         self._effect.play()
+
+    def start_repeating(self, strong: bool = True) -> None:
+        self.play(strong=strong)
+        self._repeat_timer.start()
+
+    def stop_repeating(self) -> None:
+        self._repeat_timer.stop()
+        if self._effect is not None:
+            self._effect.stop()
