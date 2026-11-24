@@ -6,6 +6,8 @@ from PySide6.QtWidgets import QApplication, QWidget
 
 from game_timer import APP_DISPLAY_NAME, APP_NAME
 from game_timer.body_break import BodyBreakWindow
+from game_timer.checklist_model import ChecklistModel
+from game_timer.checklist_window import ChecklistWindow
 from game_timer.config import REST_MINUTES, Config
 from game_timer.gifts import Gift, pick_gift
 from game_timer.home_window import HomeWindow
@@ -52,33 +54,43 @@ class AppController:
         self.overlay: TimerOverlay | None = None
         self.lock: LockScreen | None = None
         self.session_gifts: list[Gift] = []
+        self.checklist_return_item_id: str | None = None
+        self.work_from_checklist = False
 
+        self.checklist_model = ChecklistModel(config)
         self.home = HomeWindow()
         self.game_setup = SetupWindow(config)
         self.work_setup = WorkSetupWindow(config)
+        self.checklist = ChecklistWindow(self.checklist_model)
         self.round_end = WorkRoundEndWindow()
         self.body_break = BodyBreakWindow()
         self.after_rest = AfterRestWindow()
 
         self.home.game_requested.connect(self.open_game)
         self.home.work_requested.connect(self.open_work)
+        self.home.checklist_requested.connect(self.open_checklist)
         self.home.quit_requested.connect(app.quit)
 
         self.game_setup.start_requested.connect(self.start_game_session)
         self.game_setup.home_requested.connect(self.show_home)
 
-        self.work_setup.start_requested.connect(self.start_work_session)
-        self.work_setup.home_requested.connect(self.show_home)
+        self.work_setup.start_requested.connect(self._start_work_from_setup)
+        self.work_setup.home_requested.connect(self._work_setup_home)
+
+        self.checklist.home_requested.connect(self.show_home)
+        self.checklist.start_work_requested.connect(self.start_work_from_checklist)
+        self.checklist.item_completed.connect(self.on_checklist_item_completed)
+        self.checklist.finish_day_requested.connect(self.on_checklist_finish_day)
 
         self.round_end.extend_requested.connect(self.extend_work)
         self.round_end.rest_requested.connect(self.begin_body_break)
-        self.round_end.done_requested.connect(self.finish_work_to_home)
+        self.round_end.done_requested.connect(self.finish_work_outing)
 
         self.body_break.start_rest_requested.connect(self.start_rest_session)
         self.body_break.skipped.connect(self.start_rest_session)
 
-        self.after_rest.another_round_requested.connect(self.open_work)
-        self.after_rest.home_requested.connect(self.show_home)
+        self.after_rest.another_round_requested.connect(self._another_work_round)
+        self.after_rest.home_requested.connect(self.finish_work_outing)
 
     def _show(self, window: QWidget) -> None:
         window.show()
@@ -90,6 +102,7 @@ class AppController:
             self.home,
             self.game_setup,
             self.work_setup,
+            self.checklist,
             self.round_end,
             self.body_break,
             self.after_rest,
@@ -104,6 +117,8 @@ class AppController:
 
     def show_home(self) -> None:
         self.session_gifts.clear()
+        self.checklist_return_item_id = None
+        self.work_from_checklist = False
         self.chime.stop_repeating()
         self._close_overlay()
         self._hide_all_panels()
@@ -115,6 +130,44 @@ class AppController:
         self._show(self.game_setup)
 
     def open_work(self) -> None:
+        self.work_from_checklist = False
+        self.checklist_return_item_id = None
+        self.chime.stop_repeating()
+        self._close_overlay()
+        self._hide_all_panels()
+        self.work_setup.reset()
+        self._show(self.work_setup)
+
+    def open_checklist(self) -> None:
+        self.chime.stop_repeating()
+        self._close_overlay()
+        self._hide_all_panels()
+        self.checklist.present()
+
+    def start_work_from_checklist(self, item_id: str, minutes: object) -> None:
+        self.work_from_checklist = True
+        self.checklist_return_item_id = item_id
+        if isinstance(minutes, int) and minutes > 0:
+            self.start_work_session(minutes)
+            return
+        self.chime.stop_repeating()
+        self._close_overlay()
+        self._hide_all_panels()
+        self.work_setup.reset()
+        self._show(self.work_setup)
+
+    def _start_work_from_setup(self, minutes: int) -> None:
+        self.start_work_session(minutes)
+
+    def _work_setup_home(self) -> None:
+        if self.work_from_checklist:
+            self.checklist_return_item_id = None
+            self.work_from_checklist = False
+            self.open_checklist()
+            return
+        self.show_home()
+
+    def _another_work_round(self) -> None:
         self.chime.stop_repeating()
         self._close_overlay()
         self._hide_all_panels()
@@ -157,9 +210,23 @@ class AppController:
         self.chime.stop_repeating()
         self.start_work_session(minutes)
 
-    def finish_work_to_home(self) -> None:
+    def finish_work_outing(self) -> None:
         self.chime.stop_repeating()
+        item_id = self.checklist_return_item_id
+        if item_id:
+            self.checklist_return_item_id = None
+            self.work_from_checklist = False
+            self._return_to_checklist_complete(item_id)
+            return
         self.show_home()
+
+    def _return_to_checklist_complete(self, item_id: str) -> None:
+        self._hide_all_panels()
+        gift = pick_gift()
+        self.session_gifts.append(gift)
+        self.chime.play(strong=False)
+        self.checklist.complete_and_celebrate(item_id, gift, len(self.session_gifts))
+        self._show(self.checklist)
 
     def begin_body_break(self) -> None:
         self.chime.stop_repeating()
@@ -176,6 +243,15 @@ class AppController:
         self._close_overlay()
         self.chime.start_repeating(strong=False)
         self.after_rest.present()
+
+    def on_checklist_item_completed(self, item_id: str) -> None:
+        gift = pick_gift()
+        self.session_gifts.append(gift)
+        self.chime.play(strong=False)
+        self.checklist.complete_and_celebrate(item_id, gift, len(self.session_gifts))
+
+    def on_checklist_finish_day(self) -> None:
+        self.checklist.present_summary(len(self.session_gifts))
 
 
 def main() -> int:

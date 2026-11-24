@@ -82,3 +82,21 @@ class Config:
     def last_work_minutes(self, minutes: int) -> None:
         self._data["last_work_minutes"] = int(minutes)
         self.save()
+
+    def get_checklist(self) -> dict | None:
+        data = self._data.get("checklist")
+        return data if isinstance(data, dict) else None
+
+    def set_checklist(self, checklist: dict) -> None:
+        self._data["checklist"] = checklist
+        self.save()
+
+    def get_checklist_templates(self) -> list[dict]:
+        templates = self._data.get("checklist_templates")
+        if not isinstance(templates, list):
+            return []
+        return [t for t in templates if isinstance(t, dict)]
+
+    def set_checklist_templates(self, templates: list[dict]) -> None:
+        self._data["checklist_templates"] = templates
+        self.save()
