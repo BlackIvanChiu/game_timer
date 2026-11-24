@@ -2,7 +2,7 @@ import math
 import time
 
 from PySide6.QtCore import QLineF, QRectF, Qt, QTimer, Signal
-from PySide6.QtGui import QColor, QFont, QGuiApplication, QPainter, QPaintEvent, QPen
+from PySide6.QtGui import QColor, QCursor, QFont, QGuiApplication, QPainter, QPaintEvent, QPen
 from PySide6.QtWidgets import QWidget
 
 from game_timer.effects import shake
@@ -22,6 +22,7 @@ SCREEN_OFFSET = 16
 TICK_MS = 200
 RAISE_EVERY_TICKS = 10
 MESSAGE_MS = 10_000
+CORNER_COOLDOWN_SEC = 2.5
 
 
 def _lerp_color(a: QColor, b: QColor, t: float) -> QColor:
@@ -80,6 +81,8 @@ class TimerOverlay(QWidget):
         self.message = "休息中" if self.mode == "rest" else ""
         self._end_time = 0.0
         self._tick_count = 0
+        self._corner = "left"
+        self._last_flip_time = 0.0
 
         self._timer = QTimer(self)
         self._timer.setInterval(TICK_MS)
@@ -89,11 +92,32 @@ class TimerOverlay(QWidget):
         self._message_timer.timeout.connect(self._clear_message)
 
     def start(self) -> None:
-        screen = QGuiApplication.primaryScreen().availableGeometry()
-        self.move(screen.left() + SCREEN_OFFSET, screen.top() + SCREEN_OFFSET)
+        self._corner = "left"
+        self._last_flip_time = 0.0
+        self._apply_corner()
         self._end_time = time.monotonic() + self.total_seconds
         self.show()
         self._timer.start()
+
+    def _apply_corner(self) -> None:
+        screen = QGuiApplication.primaryScreen().availableGeometry()
+        y = screen.top() + SCREEN_OFFSET
+        if self._corner == "right":
+            x = screen.left() + screen.width() - self.width() - SCREEN_OFFSET
+        else:
+            x = screen.left() + SCREEN_OFFSET
+        self.move(x, y)
+
+    def _maybe_flip_corner(self) -> None:
+        """If the cursor is over the dial, toggle top-left / top-right (with cooldown)."""
+        now = time.monotonic()
+        if now - self._last_flip_time < CORNER_COOLDOWN_SEC:
+            return
+        if not self.geometry().contains(QCursor.pos()):
+            return
+        self._corner = "right" if self._corner == "left" else "left"
+        self._last_flip_time = now
+        self._apply_corner()
 
     def _tick(self) -> None:
         self.remaining = max(0.0, self._end_time - time.monotonic())
@@ -106,6 +130,9 @@ class TimerOverlay(QWidget):
         self._tick_count += 1
         if self._tick_count % RAISE_EVERY_TICKS == 0:
             self.raise_()
+
+        if self.remaining > 0:
+            self._maybe_flip_corner()
 
         self.update()
         if self.remaining <= 0:
