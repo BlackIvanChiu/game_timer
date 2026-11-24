@@ -9,14 +9,14 @@ PRESET_MINUTES = (10, 15, 20, 25)
 
 STYLE_SHEET = """
 QWidget#root { background: #FFF8EC; }
-QLabel { color: #34495E; }
+QLabel { color: #2C3E50; }
 QLabel#title { font-size: 30px; font-weight: bold; }
 QLabel#minutes { font-size: 72px; font-weight: bold; color: #5DADE2; }
-QLabel#hint { font-size: 16px; color: #7F8C8D; }
+QLabel#hint { font-size: 18px; color: #5D6D7E; }
 QPushButton {
     font-size: 22px; font-weight: bold; color: white;
     background: #5DADE2; border: none; border-radius: 16px;
-    padding: 12px 18px; min-height: 36px;
+    padding: 12px 18px; min-height: 44px;
 }
 QPushButton:hover { background: #3498DB; }
 QPushButton:pressed { background: #2E86C1; }
@@ -25,10 +25,11 @@ QPushButton#adjust { background: #F5B041; min-width: 70px; }
 QPushButton#adjust:hover { background: #F39C12; }
 QPushButton#primary { background: #1ABC9C; font-size: 26px; }
 QPushButton#primary:hover { background: #17A589; }
-QPushButton#link {
-    background: transparent; color: #7F8C8D; font-size: 14px;
-    font-weight: normal; text-decoration: underline; padding: 4px; min-height: 0;
+QPushButton#nav {
+    background: #D6EAF8; color: #1A5276; font-size: 18px;
+    min-height: 40px; padding: 10px 14px;
 }
+QPushButton#nav:hover { background: #AED6F1; }
 """
 
 
@@ -86,17 +87,17 @@ class WorkSetupWindow(QWidget):
         adjust.addWidget(plus_button)
         adjust.addStretch()
 
-        start_button = _button("開始唸書！", "primary")
-        home_button = _button("回主頁", "link")
+        start_button = _button("🍅 開始", "primary")
+        home_button = _button("🏠 主頁", "nav")
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(36, 28, 36, 20)
         layout.setSpacing(16)
-        layout.addWidget(_label("這一輪要唸多久呢？", "title"))
+        layout.addWidget(_label("🍅 唸多久？", "title"))
         layout.addLayout(adjust)
         layout.addLayout(presets)
         layout.addSpacing(12)
-        layout.addWidget(_label("時間到了會叮咚提醒，你可以再延長一點，或休息一下", "hint"))
+        layout.addWidget(_label("時間到會叮咚提醒", "hint"))
         layout.addWidget(start_button)
         layout.addStretch()
         layout.addWidget(home_button, alignment=Qt.AlignmentFlag.AlignLeft)

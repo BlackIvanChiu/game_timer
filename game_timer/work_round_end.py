@@ -9,17 +9,17 @@ MAX_VISIBLE_STICKERS = 8
 
 STYLE_SHEET = """
 QWidget#root { background: #FFF8EC; }
-QLabel { color: #34495E; }
+QLabel { color: #2C3E50; }
 QLabel#title { font-size: 28px; font-weight: bold; }
 QLabel#giftEmoji { font-size: 72px; }
-QLabel#giftLabel { font-size: 20px; font-weight: bold; color: #1ABC9C; }
-QLabel#hint { font-size: 16px; color: #7F8C8D; }
+QLabel#giftLabel { font-size: 24px; font-weight: bold; color: #148F77; }
+QLabel#hint { font-size: 18px; color: #5D6D7E; }
 QLabel#sticker { font-size: 36px; }
-QLabel#stickerMore { font-size: 16px; color: #7F8C8D; font-weight: bold; }
+QLabel#stickerMore { font-size: 18px; color: #5D6D7E; font-weight: bold; }
 QPushButton {
-    font-size: 20px; font-weight: bold; color: white;
+    font-size: 22px; font-weight: bold; color: white;
     background: #5DADE2; border: none; border-radius: 16px;
-    padding: 14px 18px; min-height: 40px;
+    padding: 14px 18px; min-height: 48px;
 }
 QPushButton:hover { background: #3498DB; }
 QPushButton#extend { background: #27AE60; }
@@ -69,19 +69,19 @@ class WorkRoundEndWindow(QWidget):
         self.collection_row.addStretch()
         self.collection_row.addStretch()
 
-        title = QLabel("這一輪完成了！")
+        title = QLabel("🎉 完成一輪")
         title.setObjectName("title")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.hint = QLabel("你得到一個小禮物。接下來想怎麼做？")
+        self.hint = QLabel("接下來？")
         self.hint.setObjectName("hint")
         self.hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.hint.setWordWrap(True)
 
-        extend5 = _button("再 5 分", "extend")
-        extend10 = _button("再 10 分", "extend")
-        rest = _button("休息 5 分", "rest")
-        done = _button("今天先這樣", "done")
+        extend5 = _button("➕ 5分", "extend")
+        extend10 = _button("➕ 10分", "extend")
+        rest = _button("☕ 休息", "rest")
+        done = _button("🏁 結束", "done")
 
         row = QHBoxLayout()
         row.setSpacing(12)
@@ -118,11 +118,7 @@ class WorkRoundEndWindow(QWidget):
         self.gift_emoji.setText(latest.emoji)
         self.gift_label.setText(latest.label)
         count = len(gifts)
-        self.hint.setText(
-            f"你得到一個小禮物！這次已經收集 {count} 張貼紙。接下來想怎麼做？"
-            if count > 1
-            else "你得到一個小禮物。接下來想怎麼做？"
-        )
+        self.hint.setText(f"🎁 × {count}" if count > 1 else "接下來？")
         self._fill_collection(gifts)
         self.show()
         self.raise_()
@@ -196,16 +192,16 @@ class AfterRestWindow(QWidget):
         self.setStyleSheet(STYLE_SHEET)
         self.resize(480, 360)
 
-        title = QLabel("休息結束囉！")
+        title = QLabel("☕ 休息結束")
         title.setObjectName("title")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        hint = QLabel("要不要再開一輪唸書？")
+        hint = QLabel("再來一輪？")
         hint.setObjectName("hint")
         hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        again = _button("再開一輪", "extend")
-        home = _button("回主頁", "done")
+        again = _button("🍅 再一輪", "extend")
+        home = _button("🏠 主頁", "done")
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(32, 28, 32, 24)

@@ -19,16 +19,16 @@ MIN_PASSWORD_LENGTH = 4
 
 STYLE_SHEET = """
 QWidget#root { background: #FFF8EC; }
-QLabel { color: #34495E; }
+QLabel { color: #2C3E50; }
 QLabel#title { font-size: 30px; font-weight: bold; }
 QLabel#minutes { font-size: 72px; font-weight: bold; color: #27AE60; }
-QLabel#hint { font-size: 16px; color: #7F8C8D; }
-QLabel#error { font-size: 16px; color: #E74C3C; }
+QLabel#hint { font-size: 18px; color: #5D6D7E; }
+QLabel#error { font-size: 18px; color: #E74C3C; }
 QLabel#fieldLabel { font-size: 18px; }
 QPushButton {
     font-size: 22px; font-weight: bold; color: white;
     background: #5DADE2; border: none; border-radius: 16px;
-    padding: 12px 18px; min-height: 36px;
+    padding: 12px 18px; min-height: 44px;
 }
 QPushButton:hover { background: #3498DB; }
 QPushButton:pressed { background: #2E86C1; }
@@ -37,12 +37,13 @@ QPushButton#adjust { background: #F5B041; min-width: 70px; }
 QPushButton#adjust:hover { background: #F39C12; }
 QPushButton#primary { background: #27AE60; font-size: 26px; }
 QPushButton#primary:hover { background: #229954; }
-QPushButton#link {
-    background: transparent; color: #7F8C8D; font-size: 14px;
-    font-weight: normal; text-decoration: underline; padding: 4px; min-height: 0;
+QPushButton#nav {
+    background: #D6EAF8; color: #1A5276; font-size: 18px;
+    min-height: 40px; padding: 10px 14px;
 }
-QPushButton#secondary { background: #BDC3C7; }
-QPushButton#secondary:hover { background: #A6ACAF; }
+QPushButton#nav:hover { background: #AED6F1; }
+QPushButton#secondary { background: #95A5A6; }
+QPushButton#secondary:hover { background: #7F8C8D; }
 QLineEdit {
     font-size: 22px; padding: 10px 14px; border: 2px solid #D5DBDB;
     border-radius: 12px; background: white; color: #2C3E50;
@@ -225,13 +226,13 @@ class StartPage(QWidget):
 
         self.password = _password_field("爸爸媽媽輸入密碼")
         self.error = _label("", "error")
-        start_button = _button("開始！", "primary")
+        start_button = _button("▶️ 開始", "primary")
         start_row = QHBoxLayout()
         start_row.addWidget(self.password, 3)
         start_row.addWidget(start_button, 2)
 
-        home_button = _button("回主頁", "link")
-        change_button = _button("更改密碼", "link")
+        home_button = _button("🏠 主頁", "nav")
+        change_button = _button("🔑 改密碼", "nav")
         footer = QHBoxLayout()
         footer.addWidget(home_button)
         footer.addStretch()
@@ -239,11 +240,11 @@ class StartPage(QWidget):
 
         layout = QVBoxLayout(self)
         layout.setSpacing(16)
-        layout.addWidget(_label("今天要玩多久呢？", "title"))
+        layout.addWidget(_label("🎮 玩多久？", "title"))
         layout.addLayout(adjust)
         layout.addLayout(presets)
         layout.addSpacing(16)
-        layout.addWidget(_label("時間到了就要休息喔！請爸爸媽媽輸入密碼後按開始", "hint"))
+        layout.addWidget(_label("家長輸入密碼後按開始", "hint"))
         layout.addLayout(start_row)
         layout.addWidget(self.error)
         layout.addStretch()

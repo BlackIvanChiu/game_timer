@@ -6,13 +6,13 @@ from game_timer import APP_DISPLAY_NAME
 
 STYLE_SHEET = """
 QWidget#root { background: #FFF8EC; }
-QLabel { color: #34495E; }
-QLabel#title { font-size: 34px; font-weight: bold; }
-QLabel#hint { font-size: 16px; color: #7F8C8D; }
+QLabel { color: #2C3E50; }
+QLabel#title { font-size: 36px; font-weight: bold; }
+QLabel#hint { font-size: 20px; color: #5D6D7E; }
 QPushButton {
-    font-size: 22px; font-weight: bold; color: white;
+    font-size: 28px; font-weight: bold; color: white;
     background: #5DADE2; border: none; border-radius: 18px;
-    padding: 20px 22px; min-height: 48px; text-align: left;
+    padding: 22px 24px; min-height: 64px; text-align: center;
 }
 QPushButton:hover { background: #3498DB; }
 QPushButton:pressed { background: #2E86C1; }
@@ -22,10 +22,11 @@ QPushButton#work { background: #5DADE2; }
 QPushButton#work:hover { background: #3498DB; }
 QPushButton#checklist { background: #F5B041; }
 QPushButton#checklist:hover { background: #F39C12; }
-QPushButton#link {
-    background: transparent; color: #7F8C8D; font-size: 14px;
-    font-weight: normal; text-decoration: underline; padding: 4px; min-height: 0;
+QPushButton#nav {
+    background: #D6EAF8; color: #1A5276; font-size: 18px;
+    min-height: 40px; padding: 10px 14px;
 }
+QPushButton#nav:hover { background: #AED6F1; }
 """
 
 
@@ -47,37 +48,40 @@ class HomeWindow(QWidget):
         title.setObjectName("title")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        hint = QLabel("今天想用哪一個呢？")
+        hint = QLabel("選一個開始")
         hint.setObjectName("hint")
         hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        game_button = QPushButton("遊戲計時\n玩之前設好時間，時間到會請爸爸媽媽解鎖")
+        game_button = QPushButton("🎮  遊戲")
         game_button.setObjectName("game")
         game_button.setCursor(Qt.CursorShape.PointingHandCursor)
         game_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        game_button.setToolTip("玩之前設時間，時間到請家長解鎖")
 
-        work_button = QPushButton("唸書計時\n自己設蕃茄鐘，時間到可以休息或再延長")
+        work_button = QPushButton("🍅  唸書")
         work_button.setObjectName("work")
         work_button.setCursor(Qt.CursorShape.PointingHandCursor)
         work_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        work_button.setToolTip("蕃茄鐘陪伴唸書")
 
-        checklist_button = QPushButton("今日清單\n一次只做一件事，完成可以得貼紙")
+        checklist_button = QPushButton("✅  清單")
         checklist_button.setObjectName("checklist")
         checklist_button.setCursor(Qt.CursorShape.PointingHandCursor)
         checklist_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        checklist_button.setToolTip("一次只做一件事")
 
-        quit_button = QPushButton("離開程式")
-        quit_button.setObjectName("link")
+        quit_button = QPushButton("🚪 離開")
+        quit_button.setObjectName("nav")
         quit_button.setCursor(Qt.CursorShape.PointingHandCursor)
         quit_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(36, 36, 36, 24)
-        layout.setSpacing(14)
+        layout.setSpacing(16)
         layout.addStretch()
         layout.addWidget(title)
         layout.addWidget(hint)
-        layout.addSpacing(16)
+        layout.addSpacing(20)
         layout.addWidget(game_button)
         layout.addWidget(work_button)
         layout.addWidget(checklist_button)

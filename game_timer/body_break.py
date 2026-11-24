@@ -7,20 +7,20 @@ from game_timer.break_prompts import pick_break_prompt
 
 STYLE_SHEET = """
 QWidget#root { background: #FFF8EC; }
-QLabel { color: #34495E; }
+QLabel { color: #2C3E50; }
 QLabel#title { font-size: 28px; font-weight: bold; }
-QLabel#task { font-size: 26px; font-weight: bold; color: #1ABC9C; }
-QLabel#hint { font-size: 16px; color: #7F8C8D; }
+QLabel#task { font-size: 28px; font-weight: bold; color: #148F77; }
+QLabel#hint { font-size: 18px; color: #5D6D7E; }
 QPushButton {
-    font-size: 20px; font-weight: bold; color: white;
+    font-size: 22px; font-weight: bold; color: white;
     background: #5DADE2; border: none; border-radius: 16px;
-    padding: 14px 18px; min-height: 40px;
+    padding: 14px 18px; min-height: 48px;
 }
 QPushButton:hover { background: #3498DB; }
 QPushButton#primary { background: #1ABC9C; }
 QPushButton#primary:hover { background: #17A589; }
-QPushButton#secondary { background: #BDC3C7; }
-QPushButton#secondary:hover { background: #A6ACAF; }
+QPushButton#secondary { background: #95A5A6; }
+QPushButton#secondary:hover { background: #7F8C8D; }
 """
 
 
@@ -49,7 +49,7 @@ class BodyBreakWindow(QWidget):
         self.resize(520, 400)
         self.prompt = ""
 
-        title = QLabel("休息前，先做一件小事")
+        title = QLabel("🏃 先做一件小事")
         title.setObjectName("title")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -58,14 +58,14 @@ class BodyBreakWindow(QWidget):
         self.task_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.task_label.setWordWrap(True)
 
-        hint = QLabel("做完再開始休息計時也可以；不想做的話可以跳過")
+        hint = QLabel("可不做，直接休息也行")
         hint.setObjectName("hint")
         hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
         hint.setWordWrap(True)
 
-        swap = _button("換一個", "secondary")
-        skip = _button("跳過", "secondary")
-        start = _button("開始休息", "primary")
+        swap = _button("🔄 換一個", "secondary")
+        skip = _button("⏭️ 跳過", "secondary")
+        start = _button("▶️ 休息", "primary")
 
         row = QHBoxLayout()
         row.setSpacing(12)
